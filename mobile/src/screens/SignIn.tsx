@@ -7,12 +7,43 @@ import { Button } from "@components/Button/Button"
 import { useNavigation } from "@react-navigation/native"
 
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes"
+import { Controller, useForm } from "react-hook-form"
+import { useAuth } from "@hooks/useAuth"
+import { AppError } from "@utils/AppError"
+import { useToast } from "@gluestack-ui/themed"
+import { ToastMessage } from "@components/ToastMessage"
+
+type FormData = {
+    email: string,
+    password: string
+}
 
 export function SignIn() {
+    const toast = useToast()
+    const { signIn } = useAuth()
     const navigator = useNavigation<AuthNavigatorRoutesProps>();
+    const { control, handleSubmit, formState: { errors }} = useForm<FormData>()
 
     function goToSignUp() {
         navigator.navigate('signUp')
+    }
+
+    function handleSignIn({email, password}: FormData) {
+        try {
+            signIn(email, password)
+
+        } catch(error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível fazer login. Tente novamente mais tarde.'    
+
+            toast.show({
+                placement: "top",
+                render: () => (
+                    <ToastMessage action="error" title={title} id='6' onClose={() => {}}/>
+                ),
+            });
+        }
+        
     }
 
 
@@ -35,9 +66,29 @@ export function SignIn() {
                     </Center>
                     <Center gap="$2">
                         <Heading color="$gray100">Acesse a conta</Heading>
-                        <Input placeholder="E-mail" keyboardType="email-address" autoCapitalize="none"/>
-                        <Input placeholder="Senha" secureTextEntry />
-                        <Button title="Acessar"  />
+
+
+                        <Controller 
+                            control={control}
+                            name='email'
+                            rules={{ required : 'Informe o email.'}}
+
+                            render={({ field: {onChange, value}}) => (
+                                <Input errorMessage={errors.email?.message} onChangeText={onChange} value={value} placeholder="E-mail" keyboardType="email-address" autoCapitalize="none"/>
+                            )}
+                        />
+
+
+                        <Controller 
+                            control={control}
+                            rules={{ required : 'Informe a senha.'}}
+                            name="password"
+                            render={({ field: {onChange, value}}) => (
+                                <Input errorMessage={errors.password?.message}  onChangeText={onChange} value={value}  placeholder="Senha" secureTextEntry />
+                            )}
+                        />
+
+                        <Button onPress={handleSubmit(handleSignIn)} title="Acessar"  />
                     </Center>
                     <Center flex={1} justifyContent="flex-end" mt="$4">
                         <Text color="$gray100" fontSize="$sm" mb="$3" fontFamily="Body">Ainda não tem acesso?</Text>
