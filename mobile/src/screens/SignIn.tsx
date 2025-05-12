@@ -8,10 +8,12 @@ import { useNavigation } from "@react-navigation/native"
 
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes"
 import { Controller, useForm } from "react-hook-form"
+
 import { useAuth } from "@hooks/useAuth"
 import { AppError } from "@utils/AppError"
 import { useToast } from "@gluestack-ui/themed"
 import { ToastMessage } from "@components/ToastMessage"
+import { useState } from "react"
 
 type FormData = {
     email: string,
@@ -19,6 +21,7 @@ type FormData = {
 }
 
 export function SignIn() {
+    const [isLoading, setIsLoading] = useState(false)
     const toast = useToast()
     const { signIn } = useAuth()
     const navigator = useNavigation<AuthNavigatorRoutesProps>();
@@ -28,13 +31,16 @@ export function SignIn() {
         navigator.navigate('signUp')
     }
 
-    function handleSignIn({email, password}: FormData) {
+    async function handleSignIn({email, password}: FormData) {
         try {
-            signIn(email, password)
+            setIsLoading(true)
+            await signIn(email, password)
 
         } catch(error) {
             const isAppError = error instanceof AppError;
             const title = isAppError ? error.message : 'Não foi possível fazer login. Tente novamente mais tarde.'    
+            
+            setIsLoading(false)
 
             toast.show({
                 placement: "top",
@@ -42,6 +48,7 @@ export function SignIn() {
                     <ToastMessage action="error" title={title} id='6' onClose={() => {}}/>
                 ),
             });
+
         }
         
     }
@@ -88,7 +95,7 @@ export function SignIn() {
                             )}
                         />
 
-                        <Button onPress={handleSubmit(handleSignIn)} title="Acessar"  />
+                        <Button onPress={handleSubmit(handleSignIn)} title="Acessar" isLoading={isLoading} />
                     </Center>
                     <Center flex={1} justifyContent="flex-end" mt="$4">
                         <Text color="$gray100" fontSize="$sm" mb="$3" fontFamily="Body">Ainda não tem acesso?</Text>
