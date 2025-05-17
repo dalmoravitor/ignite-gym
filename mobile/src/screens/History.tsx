@@ -1,28 +1,55 @@
 import { HistoryCard } from "@components/HistoryCard";
 import { ScreenHeader } from "@components/ScreenHeader";
 import { VStack, Text, Heading } from "@gluestack-ui/themed";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { SectionList } from "react-native";
+import { AppError } from "@utils/AppError";
+import { ToastMessage } from "@components/ToastMessage";
+import { useToast } from "@gluestack-ui/themed";
+import { api } from "@services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { HistoryByDayDTO } from "@dtos/HistoryByDayDTO";
+
 
 export function History() {
-    const [exercises, setExercises] = useState([
-        {
-            title: "22/02/2025",
-            data: ["Puxada frontal", "Remada unilateral"],
-        },
-        {
-            title: "23/02/2025",
-            data: ["Puxada frontal"],
+    const toast = useToast()
+    const [isLoading, setIsLoading] = useState(true)
+    const [exercises, setExercises] = useState<HistoryByDayDTO[]>([])
+
+    async function fetchHistory() {
+        try {
+            const response = await api.get('/history')
+            console.log(response.data)
+            setExercises(response.data)
+
+        } catch (error) {
+            const isAppError = error instanceof AppError
+            const title = isAppError ? error.message : "Não foi possível carregar o histórico de exercícios."
+
+            toast.show({
+                placement: "top",
+                render: () => (
+                    <ToastMessage action="error" title={title} id="6" onClose={() => {}} />
+                ),
+            })
         }
-    ])
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+          fetchHistory()
+        }, [])
+      )
+    
+
     return(
         <VStack flex={1}>
             <ScreenHeader title="Histórico de exercícios"/>
 
             <SectionList 
             sections={exercises} 
-            keyExtractor={(item) => item} 
-            renderItem={() => <HistoryCard /> }
+            keyExtractor={(item) => item.id} 
+            renderItem={({ item }) => <HistoryCard data={item}/> }
             renderSectionHeader={({ section }) => (
                 <Heading color="$gray200" fontSize="$md" mt="$10" mb="$3" fontFamily="$heading">{section.title}</Heading>
             )}

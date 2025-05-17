@@ -20,6 +20,7 @@ type RouteParamsProps = {
 }
 
 export function Exercise( ) {
+    const [sendingRegister, setSendingRegister] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO)
     const toast = useToast()
@@ -48,6 +49,36 @@ export function Exercise( ) {
 
     function handleGoBack() {
         navigation.goBack()
+    }
+
+    async function handleMarkAsDone(exerciseId: string) {
+        try {
+            setSendingRegister(true)
+            await api.post('/history', { exercise_id: exerciseId })
+
+            toast.show({
+                placement: "top",
+                render: () => (
+                    <ToastMessage action="success" title={"Parabéns! Exercício registrado em seu histórico."} id="6" onClose={() => {}} />
+            )
+        })
+
+        navigation.navigate("history")
+
+            
+        } catch (error) {
+            const isAppError = error instanceof AppError
+            const title = isAppError ? error.message : "Não foi possível marcar o exercício como feito."
+
+            toast.show({
+                placement: "top",
+                render: () => (
+                    <ToastMessage action="error" title={title} id="6" onClose={() => {}} />
+                ),
+            }) 
+        } finally {
+            setSendingRegister(false)
+        }
     }
 
     useEffect(() => {
@@ -94,7 +125,7 @@ export function Exercise( ) {
                                         <Text color="$gray200" ml="$2">{`${exercise.repetitions} repetições`}</Text>
                                     </HStack>
                                 </HStack>
-                                <Button title="Marcar como feito" />
+                                <Button isLoading={sendingRegister} onPress={() => handleMarkAsDone(exerciseId)} title="Marcar como feito" />
                             </Box>
                         </VStack>
                     </ScrollView>
