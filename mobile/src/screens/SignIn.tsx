@@ -23,7 +23,7 @@ type FormData = {
 export function SignIn() {
     const [isLoading, setIsLoading] = useState(false)
     const toast = useToast()
-    const { signIn } = useAuth()
+    const { singIn } = useAuth()
     const navigator = useNavigation<AuthNavigatorRoutesProps>();
     const { control, handleSubmit, formState: { errors }} = useForm<FormData>()
 
@@ -34,7 +34,7 @@ export function SignIn() {
     async function handleSignIn({email, password}: FormData) {
         try {
             setIsLoading(true)
-            await signIn(email, password)
+            await singIn(email, password)
 
         } catch(error) {
             const isAppError = error instanceof AppError;

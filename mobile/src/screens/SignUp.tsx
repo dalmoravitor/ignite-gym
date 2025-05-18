@@ -37,7 +37,7 @@ const signUpSchema = yup.object({
 
 export function SignUp() {
     const [isLoading, setIsLoading] = useState(false)
-    const {signIn} = useAuth()
+    const {singIn} = useAuth()
     const toast = useToast()
     const { control, handleSubmit, formState: { errors} } = useForm<FormDataProps>({
         resolver: yupResolver(signUpSchema)
@@ -57,7 +57,7 @@ export function SignUp() {
             setIsLoading(true)
 
             await api.post('/users', { name, email, password });
-            await signIn(email, password)
+            await singIn(email, password)
             
         } catch (error) {
             setIsLoading(false)

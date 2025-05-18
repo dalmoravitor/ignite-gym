@@ -67,7 +67,7 @@ export function Profile() {
   async function handleUserPhotoSelect() {
     try {
       const photoSelected = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, 
         quality: 1,
         allowsEditing: true,
         aspect: [4, 4],
@@ -133,7 +133,7 @@ export function Profile() {
 
       }
     } catch (err) {
-      console.error(err);
+      console.log(err);
     }
   }
 
